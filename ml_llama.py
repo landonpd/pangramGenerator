@@ -17,7 +17,7 @@ def generate_text(prompt,model,temp=.7,p=.1,k=50,max_tokens=100,suffix="",stop=[
         output=model.create_completion(prompt, temperature=0,typical_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stop)
     return output["choices"][0]["text"] #might add strip() which removes whitespace at teh beginning and end, or something else if I specify it
 
-def count_tokens(text,model):
+def count_tokens(text,model): #one token is about 4 letters
     tokens=model.tokenize(text.encode())
     return len(tokens)
 
