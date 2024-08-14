@@ -54,11 +54,17 @@
 
 
 # # python3 -m llama_cpp.server --model /Users/landondixon/.cache/lm-studio/models/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf
-
+import string
 PROMPT="Can you make a new pangram please, a pangram is a sentence with at least one instance of all 26 letters. Try to make a pangram that actually sounds like a full sentence instead of a list of words.{sentence_starter}{phrases}{num_words} Only respond with the generated pangram."
 SENTENCE_STARTER_PROMPT="Here is a sentence starter for your pangram: \"{st}\"."
 PHRASES_PROMPT="Here are phrases that should be included in the pangram: \"{phrases}\"."
 NUMBER_OF_WORDS_PROMPT="Try and make your pangram {num} words long or shorter."
+
+def num_char(text):
+    result_str=text.replace(' ','')
+    for char in string.punctuation:
+        result_str=result_str.replace(char,'')
+    print(result_str)
 
 sentence_starter=""
 phrases=[]
@@ -73,3 +79,4 @@ if num_wrd>0:
     nd=NUMBER_OF_WORDS_PROMPT.format(num=num_wrd)
 prompt=prompt.format(sentence_starter=st,phrases=p,num_words=nd)
 print(f"prompt used: {prompt}")
+num_char(prompt)

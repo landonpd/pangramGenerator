@@ -12,9 +12,9 @@ def generate_text(prompt,model,temp=.7,p=.1,k=50,max_tokens=100,suffix="",stop=[
     #p: limits the next token to a subset of tokens with a cummulative probabilaty higher than p 0 to 1, commonly .9 o 1
     #temp: controls the randomness in generatino, lower more deterministic, higher more random, 0 to 1, commonly .5 to 1
     if seed!=-1:
-        output=model.create_completion(prompt, temperature=0,min_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stop,seed=seed) #create_completion equals model() but because theres no typing I don't think I can do that
+        output=model.create_completion(prompt, repeat_penalty=1.5,temperature=0,min_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stop,seed=seed) #create_completion equals model() but because theres no typing I don't think I can do that
     else:
-        output=model.create_completion(prompt, temperature=0,typical_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stop)
+        output=model.create_completion(prompt, repeat_penalty=1.5,temperature=temp,typical_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stop)
     return output["choices"][0]["text"] #might add strip() which removes whitespace at teh beginning and end, or something else if I specify it
 
 def count_tokens(text,model): #one token is about 4 letters
