@@ -1,0 +1,123 @@
+All the possible args for making a model, * means I want to use it, ** means that I might want to use it at some point
+*** means I don't know what it does but I think it couuld be useful
+
+*model_path: Path to the model.
+n_gpu_layers: Number of layers to offload to GPU (-ngl). If -1, all layers are offloaded.
+split_mode: How to split the model across GPUs. See llama_cpp.LLAMA_SPLIT_* for options.
+main_gpu: main_gpu interpretation depends on split_mode: LLAMA_SPLIT_NONE: the GPU that is used for the entire model. LLAMA_SPLIT_ROW: the GPU that is used for small tensors and intermediate results. LLAMA_SPLIT_LAYER: ignored
+tensor_split: How split tensors should be distributed across GPUs. If None, the model is not split.
+rpc_servers: Comma separated list of RPC servers to use for offloading
+**vocab_only: Only load the vocabulary no weights.
+***use_mmap: Use mmap if possible.
+use_mlock: Force the system to keep the model in RAM.
+kv_overrides: Key-value overrides for the model.
+*seed: RNG seed, -1 for random
+***n_ctx: Text context, 0 = from model
+n_batch: Prompt processing maximum batch size
+n_threads: Number of threads to use for generation
+n_threads_batch: Number of threads to use for batch processing
+rope_scaling_type: RoPE scaling type, from `enum llama_rope_scaling_type`. ref: https://github.com/ggerganov/llama.cpp/pull/2054
+pooling_type: Pooling type, from `enum llama_pooling_type`.
+rope_freq_base: RoPE base frequency, 0 = from model
+rope_freq_scale: RoPE frequency scaling factor, 0 = from model
+yarn_ext_factor: YaRN extrapolation mix factor, negative = from model
+yarn_attn_factor: YaRN magnitude scaling factor
+yarn_beta_fast: YaRN low correction dim
+yarn_beta_slow: YaRN high correction dim
+yarn_orig_ctx: YaRN original context size
+logits_all: Return logits for all tokens, not just the last token. Must be True for completion to return logprobs.
+embedding: Embedding mode only.
+offload_kqv: Offload K, Q, V to GPU.
+flash_attn: Use flash attention.
+***last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
+lora_base: Optional path to base model, useful if using a quantized base model and you want to apply LoRA to an f16 model.
+lora_path: Path to a LoRA file to apply to the model.
+numa: numa policy
+***chat_format: String specifying the chat format to use when calling create_chat_completion.
+***chat_handler: Optional chat handler to use when calling create_chat_completion.
+draft_model: Optional draft model to use for speculative decoding.
+tokenizer: Optional tokenizer to override the default tokenizer from llama.cpp.
+***verbose: Print verbose output to stderr.
+type_k: KV cache data type for K (default: f16)
+type_v: KV cache data type for V (default: f16)
+spm_infill: Use Suffix/Prefix/Middle pattern for infill (instead of Prefix/Suffix/Middle) as some models prefer this.
+
+
+args for responding to a prompt
+*prompt: The prompt to generate text from.
+**suffix: A suffix to append to the generated text. If None, no suffix is appended.
+*max_tokens: The maximum number of tokens to generate. If max_tokens <= 0 or None, the maximum number of tokens to generate is unlimited and depends on n_ctx.
+*temperature: The temperature to use for sampling.
+*top_p: The top-p value to use for nucleus sampling. Nucleus sampling described in academic paper "The Curious Case of Neural Text Degeneration" https://arxiv.org/abs/1904.09751
+*min_p: The min-p value to use for minimum p sampling. Minimum P sampling as described in https://github.com/ggerganov/llama.cpp/pull/3841
+*typical_p: The typical-p value to use for sampling. Locally Typical Sampling implementation described in the paper https://arxiv.org/abs/2202.00666.
+***logprobs: The number of logprobs to return. If None, no logprobs are returned.
+***echo: Whether to echo the prompt.
+**stop: A list of strings to stop generation when encountered.
+**frequency_penalty: The penalty to apply to tokens based on their frequency in the prompt.
+**presence_penalty: The penalty to apply to tokens based on their presence in the prompt.
+**repeat_penalty: The penalty to apply to repeated tokens.
+*top_k: The top-k value to use for sampling. Top-K sampling described in academic paper "The Curious Case of Neural Text Degeneration" https://arxiv.org/abs/1904.09751
+***stream: Whether to stream the results.
+**seed: The seed to use for sampling.
+tfs_z: The tail-free sampling parameter. Tail Free Sampling described in https://www.trentonbricken.com/Tail-Free-Sampling/.
+mirostat_mode: The mirostat sampling mode.
+mirostat_tau: The target cross-entropy (or surprise) value you want to achieve for the generated text. A higher value corresponds to more surprising or less predictable text, while a lower value corresponds to less surprising or more predictable text.
+mirostat_eta: The learning rate used to update `mu` based on the error between the target and observed surprisal of the sampled word. A larger learning rate will cause `mu` to be updated more quickly, while a smaller learning rate will result in slower updates.
+model: The name to use for the model in the completion object.
+***stopping_criteria: A list of stopping criteria to use.
+logits_processor: A list of logits processors to use.
+grammar: A grammar to use for constrained sampling.
+logit_bias: A logit bias to use.
+
+
+Output Fields Explained for llama model
+
+id:
+
+Description: Unique identifier for the completion request.
+Example: 'cmpl-ed5761db-973a-4e03-9e72-15c187613e4e'
+object:
+
+Description: Type of object returned. For text completion, this is typically 'text_completion'.
+Example: 'text_completion'
+created:
+
+Description: Timestamp of when the completion request was created, in Unix time format.
+Example: 1723568621
+model:
+
+Description: Path or name of the model used to generate the completion.
+Example: '/Users/landondixon/.cache/lm-studio/models/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf'
+choices:
+
+Description: List of possible completions for the given prompt. Each item represents a different completion choice.
+Fields:
+text: Generated text for this choice.
+index: Index of this completion choice in the list (usually 0 if there's only one choice).
+logprobs: Information about the log probabilities of tokens in the completion (often None).
+finish_reason: Reason the completion ended, such as 'length' if truncated due to length limit.
+Example:
+json
+Copy code
+{
+  'text': ' jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.\nI love this sentence. It is known as the "pangram," a sentence that uses all the letters of the alphabet at least once. It is often used by typists and keyboard enthusiasts to test their typing speed and accuracy. I use it as a way to warm up my typing muscles, to get my fingers',
+  'index': 0,
+  'logprobs': None,
+  'finish_reason': 'length'
+}
+usage:
+
+Description: Details about token usage for the completion request.
+Fields:
+prompt_tokens: Number of tokens used in the prompt.
+completion_tokens: Number of tokens used in the completion.
+total_tokens: Total number of tokens (sum of prompt_tokens and completion_tokens).
+Example:
+json
+Copy code
+{
+  'prompt_tokens': 5,
+  'completion_tokens': 100,
+  'total_tokens': 105
+}
