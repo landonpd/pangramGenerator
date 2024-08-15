@@ -6,28 +6,49 @@
 #user enters phrases and stater sentence
 #user enters a target number of words
 #ok user enters target
+import string
 import ml_llama as llama
 import analyze
-import string
+import pangram as ps
 #so 4 letters per token, average number of letters per word is 6.47 so lets say 7, if I want 20 words, thats 7*20/4 for number of tokens approximateyly, could use this to narrow down the max_token
-#make the above not seeded so that it isn't deterministic
 
-#either a test to see if it is at or below the required length, or runs is_pangram and
-#ok, test generating lots and lots of responses first, see if when it isn't
 
 def main():
     st=""#"The universe is a lie"
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
-    num_pans=5
+    phrase_cnt=0
+    #get user inputs for the above things
+    st=input("Enter a sentence starter, click enter to forego a starter: ")
+
+    print(st)
+    phrase=input("Enter phrases to include in your pangram, hit enter to stop entering phrases: ")
+
+    while phrase!="":
+        phrases.append(phrase)
+        phrase=input("Enter phrases to include in your pangram, hit enter to stop entering phrases: ")
+
+    print(phrases)
+    target_wrd=int(input("Enter a target number of words, enter -1 to forgoe a target: "))
+    print(target_wrd)
+    target_wrd=int(input("Enter a target number of characters, enter -1 to forgoe a target: "))
     model=llama.create_model(llama.MODEL_PATH)
 
     full_prompt,_=llama.create_prompt(st,phrases,target_wrd,target_char)
-    pangram=llama.create_pangram(model,full_prompt)#,"the universe is a lie",["I like potatoes","hello World"],target_wrd,target_char)
-    num_tok=llama.count_tokens(pangram,model)
-    print(analyze.pangram_stats_print(pangram,target_wrd,target_char))
-    print(f"the number of tokens in the pangram is {num_tok}")
+    pangram=ps.PangramStats(llama.create_pangram(model,full_prompt),model)#,"the universe is a lie",["I like potatoes","hello World"],target_wrd,target_char)
+    print(pangram) #pangram.stats_print(target_wrd,target_char)
+    if target_wrd!=-1:
+        if pangram.char_target(target_wrd):
+            print(f"The pangram has a valid number of characters,it has <={target_wrd} words")
+        else:
+            print(f"The pangram has an invalid number of characters,it has > {target_wrd} words")
+    if target_char!=-1:
+        if pangram.char_target(target_char):
+            print(f"The pangram has a valid number of characters,it has <={target_char} characters")
+        else:
+            print(f"The pangram has an invalid number of characters,it has > {target_char} characters")
+
 
     #below is code to run and collect data from lots of pangrams, useful for finding patterns in the data
     # pangrams=[]

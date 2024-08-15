@@ -147,5 +147,14 @@ KNOWN_PANGRMAS= [
     "No kidding -- Lorenzo called off his trip to visit Mexico City just because they told him the conquistadores were extinct.",
     "Forsaking monastic tradition, twelve jovial friars gave up their vocation for a questionable existence on the flying trapeze."
 ]
-array="\n".join(KNOWN_PANGRMAS)
-print(f"heres a string {array}")
+# array="\n".join(KNOWN_PANGRMAS)
+# print(f"heres a string {array}")
+
+if 3:
+    print("3 is true")
+else:
+    print("3 is false")
+if 0:
+    print("0 is true")
+else:
+    print("0 is false")

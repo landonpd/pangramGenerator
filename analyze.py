@@ -1,165 +1,104 @@
+'''
+File with functions to test aspects of the pangrams being generated, using this file to fine tune my prompts
+'''
+
 import string
 import ml_llama as llama
+import pangram as ps
 
 #maybe put these type of functions somewhere else entirely
 def char_to_int(char):
     return ord(char)-97
 
+def int_to_char(char):
+    return char(char+97)
 
 def ave(arr):
     return round(sum(arr)/len(arr),3)
 
-def num_words(text):
-    return len(text.split(' '))
-
-def num_char(text):
-    result_str=text.replace(' ','')
-    for char in string.punctuation:
-        result_str=result_str.replace(char,'')
-    return len(result_str)
-
-
-def is_pangram(text):
-    found=False
-    missingLet=[]
-    text=text.lower()
-    for letter in string.ascii_lowercase:
-        for char in text:
-            if letter==char:
-                found=True
-                # print(f"found the letter {letter}")
-                break
-        if not found:
-            missingLet.append(letter)
-        found=False
-    if len(missingLet)==0:
-        return True,missingLet
-    else:
-        return False,missingLet
-
-#maybe reformat to only return the bool, not as space efficient when I don't need the length
-def is_good_len(text,target,counter):
-    len=counter(text)
-    return len<=target,len
-
+def to_percent(num):
+    return str(round(100*num,2))+"%"
 #calculates how far apart two strings are and returns the value
 def edit_distance(str1, str2, m, n, d = {}):
-
     key = m, n
+    # If first string is empty, the only option is to insert all characters of second string into first
 
-    # If first string is empty, the only option
-    # is to insert all characters of second
-    # string into first
     if m == 0:
         return n
+    # If second string is empty, the only option is to remove all character of first string
 
-    # If second string is empty, the only
-    # option is to remove all characters
-    # of first string
     if n == 0:
         return m
 
     if key in d:
         return d[key]
+    # If last characters of two strings are same, nothing much to do. Ignore last characters and get count for remaining strings.
 
-    # If last characters of two strings are same,
-    # nothing much to do. Ignore last characters
-    # and get count for remaining strings.
     if str1[m - 1] == str2[n - 1]:
         return edit_distance(str1, str2, m - 1, n - 1)
 
-    # If last characters are not same, consider
-    # all three operations on last character of
-    # first string, recursively compute minimum
-    # cost for all three operations and take
-    # minimum of three values.
-
-    # Store the returned value at dp[m-1][n-1]
-    # considering 1-based indexing
+    # If last characters are not same, consider all three operations on last character of first string, recursively compute minimum
+    # cost for all three operations and take minimum of three values. Store the returned value at dp[m-1][n-1] considering 1-based indexing
     d[key] = 1 + min(edit_distance(str1, str2, m, n - 1), # Insert
                      edit_distance(str1, str2, m - 1, n), # Remove
                      edit_distance(str1, str2, m - 1, n - 1)) # Replace
     return d[key]
 
 #finds the average edit distance from a string to every string in a provided list
-def edit_distance_ave(pan,pan_lst): #
+def edit_distance_ave(pangram,pan_lst): #takes in a pangramStats and a panstats_lst, really consider using string and string[] instead
     distances=[]
-    pan_len=len(pan)
-    for txt in pan_lst:
-        if txt!=pan:
-            distances.append(edit_distance(pan,txt,pan_len,len(txt)))
+    pan_len=len(pangram.pangram)
+    for pan in pan_lst:
+        if pan!=pan:
+            distances.append(edit_distance(pangram.pangram,pan.pangram,pan_len,len(pan.pangram)))
 
     return ave(distances)
 
 
-#just returns the needed stats for the pan
-def pangram_stats(pangram): #returns if it was a pangram, the list of missing letters, the number of words and the number of characters
-    is_pan,missing_let=is_pangram(pangram)
-    len_wrds=num_words(pangram)
-    len_char=num_char(pangram)
-    return (is_pan,missing_let,len_wrds,len_char)
+#counts the number of times each letter was missing letters and returns the list
+# def missing_let_freq(pangrams): #takes in a pangramStats
+#     missing_char_counts=[0 for i in range(26)]
+#     wrong_counts=0
+#     for pan in pangrams:
+#         for let in pan.missing_let:
+#             missing_char_counts[char_to_int(let)]+=1
+#     return missing_char_counts #,wrong_counts
 
-#returns if the given sentence is a pangram, along with if it met the target length for either words or chars or both
-#if no target is specified for the length it still return the stats.
-#Might reformat to match how I have it printing in main,
-#This is a True pangram with 16 words, 85 characters, and an average distance to other generated pangrams of 75.75.
-def pangram_stats_print(pangram,target_wrds=-1,target_chars=-1):
-    is_pan,missing_let=is_pangram(pangram)
-    good_len_wrds,len_wrds=is_good_len(pangram,target_wrds,num_words)
-    good_len_char,len_char=is_good_len(pangram,target_chars,num_char)
-    results=f"here is the generated pangram: \"{pangram}\"\n"
-    if is_pan:
-        results+="It is a valid pangram, yayyyyyyy!!!"
-    else:
-        results+=f"It is not a valid pangram, missing letters: {missing_let}"
-    if target_wrds>0:
-        if good_len_wrds:
-            wrd_count_str=f"\nThe number of words in the pangram was valid, it was {len_wrds} words long which was less than or equal to the target of {target_wrds}"
-        else:
-            wrd_count_str=f"\nThe number of words in the pangram was invalid, it was {len_wrds} words long which was less than or equal to the target of {target_wrds}"
-    else:
-        wrd_count_str=f"\nThere are {len_wrds} words in the pangram."
-    results+=wrd_count_str
-    if target_chars>0:
-        if good_len_char:
-            char_count_str=f"\nThe number of characters in the pangram was valid, it was {len_char} characters long which was less than or equal to the target of {target_chars}"
-        else:
-            char_count_str=f"\nThe number of characters in the pangram was invalid, it was {len_char} characters long which was less than or equal to the target of {target_chars}"
-    else:
-        char_count_str=f"\nThere are {len_char} characters in the pangram."
-    results+=char_count_str
-    return results #probably return instead of print
-
-#counts the number of missing letters and returns the list
-def test_missing_let_freq(pangrams):
-    missing_char_counts=[0 for i in range(26)]
-    results=()
-    wrong_counts=0
+#counts the number of correct pans, takes in PanStats
+def num_correct(pangrams):
+    cnt=0
     for pan in pangrams:
-        results=pangram_stats(pan)
-        if not results[0]:
-            wrong_counts+=1
-        for let in results[1]:
-            missing_char_counts[char_to_int(let)]+=1
-    return missing_char_counts,wrong_counts
+        if pan.is_pan:
+            cnt+=1
+    return cnt
+#counts the number of incorrect pans, takes in panStats
+def num_wrong(pangrams):
+    cnt=0
+    for pan in pangrams:
+        if not pan.is_pan:
+            cnt+=1
+    return cnt
 
-
-#takes the stats of the entire list of pangrams and returns all of them
+#takes the stats of the entire list of pangrams and returns all of them as seperate lists, maybe not needed anymore
 def stats_aggregation(pangrams):
-    is_pan=False
-    len_wrd=0
-    len_char=0
+    pans=[]
     is_pans=[]
-    len_wrds=[]
-    len_chars=[]
-    distances=[]
+    wrd_cnts=[]
+    char_cnts=[]
+    tok_cnts=[]
+    missing_char_cnt=[0 for i in range(26)]
+    # distances=[]
     for pan in pangrams:
-        distances.append(edit_distance_ave(pan,pangrams))
-        is_pan,_,len_wrd,len_char=pangram_stats(pan)
-        is_pans.append(is_pan)
-        len_wrds.append(len_wrd)
-        len_chars.append(len_char)
-    return is_pans,len_wrds,len_chars,distances
+        # pans.append(pan.pangram)
+        #is_pan,_,len_wrd,len_char=pangram_stats(pan)
+        is_pans.append(pan.is_pan)
+        wrd_cnts.append(pan.wrd_cnt)
+        char_cnts.append(pan.char_cnt)
+        tok_cnts.append(pan.tok_cnt)
+        for let in pan.missing_let:
+            missing_char_cnt[char_to_int(let)]+=1
+
+    return is_pans,wrd_cnts,char_cnts,tok_cnts,missing_char_cnt#,distances
 
 
 
@@ -182,31 +121,52 @@ def stats_aggregation(pangrams):
 
 
 def main():
+    #default values for user inputted parameters, can also be used for testing here
     st=""#"The universe is a lie"
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
-    num_pans=5
+    num_pans=100
+    generator_tracker=(num_pans/20)//1
     model=llama.create_model(llama.MODEL_PATH)
 
     full_prompt,_=llama.create_prompt(st,phrases,target_wrd,target_char)
-    pangrams=[]
-    num_toks=[]
-    for i in range(num_pans):
-        temp_pan=llama.create_pangram(model,full_prompt)
-        pangrams.append(temp_pan)
-        num_toks.append(llama.count_tokens(temp_pan,model))
-        if i%10==0:
-            print(f"\n\n{i} pangrams generated\n\n")
-    missing_let,wrong_count=test_missing_let_freq(pangrams)
-    for i in range(len(missing_let)):
-        print(f"{string.ascii_lowercase[i]}:{missing_let[i]}")
 
-    is_pans,len_wrds,len_chars,distances=stats_aggregation(pangrams)
+    pangrams=[]
+    #generate num_pan pangrams, then calculate their tokens, maybe doing this somewhere else
+    for i in range(num_pans):
+        pangrams.append(ps.PangramStats(llama.create_pangram(model,full_prompt),model))
+        if i%generator_tracker==0 and 1!=0: #quick thing to help track progress for longer tests
+            print(f"\n\n{i} pangrams generated\n\n")
+
+    #aggregating data from all pangrams
+    is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
+
+    #printing letter frequency stuff, including max and min
+    max=min=missing_let[0]
+    max_ind=min_ind=0
+    for i in range(len(missing_let)):
+        if missing_let[i]>max:
+            max=missing_let[i]
+            max_ind=0
+        if missing_let[i]<min:
+            min=missing_let[i]
+            min_ind=i
+        print(f"{string.ascii_lowercase[i]}:{missing_let[i]}")
+    print(f"The most missed letter was {int_to_char(max_ind)} with {max} times missing")
+    print(f"The least missed letter was {int_to_char(min_ind)} with only {min}")
+
+    #printing out the pangrams
     print(f"\n\nHere are the {num_pans} generated pangrams.\n")
-    for i in range(len(pangrams)):
-        print(f"{pangrams[i]}\n\nThis is a {is_pans[i]} pangram with {len_wrds[i]} words, {len_chars[i]} characters, and an average distance to other generated pangrams of {distances[i]}.\n------\n")
-    print(f"number of false pangrams: {wrong_count} out of {num_pans}. {round(((num_pans-wrong_count)/num_pans)*100)}% correct")
-    print(f"average num of tokens: {ave(num_toks)}\naverage num of words: {ave(len_wrds)}\naverage num of characters: {ave(len_chars)}\naverage edit distance: {ave(distances)}")
+    for pan in pangrams: #maybe only print the true ones
+        print(f"{pan}\n------\n")
+
+    wrong=num_wrong(pangrams)
+    correct=num_correct(pangrams)
+    print(f"number of false pangrams: {wrong} out of {num_pans}, {to_percent(wrong/num_pans)}%.")
+    print(f"number of false pangrams: {correct} out of {num_pans}, {to_percent(wrong/num_pans)}%.")
+    print(f"average num of tokens: {ave(tok_cnts)}\naverage num of words: {ave(wrd_cnts)}\naverage num of characters: {ave(char_cnts)}")
+
+#\naverage edit distance: {analyze.ave(distances)}, ok only missing distance stats now
 if __name__=="__main__":
     main()
