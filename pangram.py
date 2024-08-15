@@ -8,12 +8,13 @@ class Pangram:
     def __init__(self, pan):
         self._pangram = pan
         self._is_valid = self.__is_pangram()
-    def __is_pangram(self): #good, maybe make private
+    def __is_pangram(self):
         text = self.pangram.lower()
         for letter in string.ascii_lowercase:
             if letter not in text:
                 return False
         return True
+    #essentially getters
     @property
     def pangram(self):
         return self._pangram
@@ -22,9 +23,10 @@ class Pangram:
     def is_valid(self):
         return self._is_valid
 
-class PangramStats(Pangram):
+class PangramStats():
     def __init__(self, pan,model): #would need to take in a model to actually store tokens, maybe I make this one settable?
-        super().__init__(pan) #ask claude how I can make a pangramstats with a Pangram
+        self._pangram=pan.pangram
+        self._is_valid=pan.is_valid
         self._wrd_cnt = self.__num_words()
         self._char_cnt = self.__num_char()
         self._tok_cnt = llama.count_tokens(self.pangram,model)
@@ -42,6 +44,8 @@ class PangramStats(Pangram):
         return len(result_str)
 
     def __missing_let(self): #good, maybe make private
+        if self._is_valid:
+            return []
         missing_let = []
         text = self.pangram.lower()
         for letter in string.ascii_lowercase:
@@ -55,6 +59,10 @@ class PangramStats(Pangram):
         return self._pangram
 
     @property
+    def is_valid(self):
+        return self._is_valid
+
+    @property
     def wrd_cnt(self):
         return self._wrd_cnt
 
@@ -65,10 +73,6 @@ class PangramStats(Pangram):
     @property
     def tok_cnt(self):
         return self._tok_cnt
-
-    @property
-    def is_valid(self):
-        return self._is_valid
 
     @property
     def missing_letters(self):

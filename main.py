@@ -12,6 +12,12 @@ import analyze
 import pangram as ps
 #so 4 letters per token, average number of letters per word is 6.47 so lets say 7, if I want 20 words, thats 7*20/4 for number of tokens approximateyly, could use this to narrow down the max_token
 
+#generates pangrams using the prompt until the result is a valid pangram
+def generate_pangram(model,prompt):
+    pan=ps.Pangram(llama.create_pangram(model,prompt))
+    while not pan.is_valid:
+        pan=ps.Pangram(llama.create_pangram(model,prompt))
+    return pan
 
 def main():
     st=""#"The universe is a lie"
