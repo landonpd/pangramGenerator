@@ -17,43 +17,50 @@ def generate_pangram(model,prompt):
     pan=ps.Pangram(llama.create_pangram(model,prompt))
     while not pan.is_valid:
         pan=ps.Pangram(llama.create_pangram(model,prompt))
-    return pan
+    return ps.PangramStats(pan,model)
 
+#generates variable amount of valid pangrams
+def generate_pangrams(model,prompt,num):
+    pans=[]
+    for i in range(num):
+        pans.append(generate_pangram(model,prompt))
+    return pans
 def main():
     st=""#"The universe is a lie"
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
-    phrase_cnt=0
+    num_pans=1
     #get user inputs for the above things
     st=input("Enter a sentence starter, click enter to forego a starter: ")
-
-    print(st)
+    # print(st)
     phrase=input("Enter phrases to include in your pangram, hit enter to stop entering phrases: ")
 
     while phrase!="":
         phrases.append(phrase)
         phrase=input("Enter phrases to include in your pangram, hit enter to stop entering phrases: ")
 
-    print(phrases)
+    # print(phrases)
     target_wrd=int(input("Enter a target number of words, enter -1 to forgoe a target: "))
-    print(target_wrd)
+    # print(target_wrd)
     target_wrd=int(input("Enter a target number of characters, enter -1 to forgoe a target: "))
+    num_pans=int(input("enter how many pangrams you want generated: "))
+    #create the model, generate the prompt,
     model=llama.create_model(llama.MODEL_PATH)
-
     full_prompt,_=llama.create_prompt(st,phrases,target_wrd,target_char)
-    pangram=ps.PangramStats(llama.create_pangram(model,full_prompt),model)#,"the universe is a lie",["I like potatoes","hello World"],target_wrd,target_char)
-    print(pangram) #pangram.stats_print(target_wrd,target_char)
-    if target_wrd!=-1:
-        if pangram.char_target(target_wrd):
-            print(f"The pangram has a valid number of characters,it has <={target_wrd} words")
-        else:
-            print(f"The pangram has an invalid number of characters,it has > {target_wrd} words")
-    if target_char!=-1:
-        if pangram.char_target(target_char):
-            print(f"The pangram has a valid number of characters,it has <={target_char} characters")
-        else:
-            print(f"The pangram has an invalid number of characters,it has > {target_char} characters")
+    pangrams=generate_pangrams(model,full_prompt,num_pans)
+    for pan in pangrams:
+        print(f"{pan}\n------\n") #pangram.stats_print(target_wrd,target_char)
+    # if target_wrd!=-1:
+    #     if pangram.char_target(target_wrd):
+    #         print(f"The pangram has a valid number of characters,it has less than or {target_wrd} words.")
+    #     else:
+    #         print(f"The pangram has an invalid number of characters,it has more than {target_wrd} words.")
+    # if target_char!=-1:
+    #     if pangram.char_target(target_char):
+    #         print(f"The pangram has a valid number of characters,it has less than or {target_char} characters.")
+    #     else:
+    #         print(f"The pangram has an invalid number of characters,it has more than {target_char} characters.")
 
 
     #below is code to run and collect data from lots of pangrams, useful for finding patterns in the data

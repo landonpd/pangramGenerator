@@ -1,5 +1,20 @@
 '''
 File with functions to test aspects of the pangrams being generated, using this file to fine tune my prompts
+
+analyze the below to help fine tune default prompt
+missing letter frequencey Got function
+maybe letter frequencey
+variation in the responces, use algo function
+number of words Got function
+number of chars Got function
+To make sence of avereage edit distnace, make random strings of the average length and then find the average distance between those,
+
+pangram         : A quick brown fox jumps over the lazy dog.
+number of words : 9
+number of chars : 33
+missing letters : [] #['a','c']
+
+
 '''
 
 import string
@@ -10,8 +25,8 @@ import pangram as ps
 def char_to_int(char):
     return ord(char)-97
 
-def int_to_char(char):
-    return char(char+97)
+def int_to_char(num):
+    return chr((num+97))
 
 def ave(arr):
     return round(sum(arr)/len(arr),3)
@@ -54,16 +69,6 @@ def edit_distance_ave(pangram,pan_lst): #takes in a pangramStats and a panstats_
 
     return ave(distances)
 
-
-#counts the number of times each letter was missing letters and returns the list
-# def missing_let_freq(pangrams): #takes in a pangramStats
-#     missing_char_counts=[0 for i in range(26)]
-#     wrong_counts=0
-#     for pan in pangrams:
-#         for let in pan.missing_let:
-#             missing_char_counts[char_to_int(let)]+=1
-#     return missing_char_counts #,wrong_counts
-
 #counts the number of correct pans, takes in PanStats
 def num_correct(pangrams):
     cnt=0
@@ -95,29 +100,46 @@ def stats_aggregation(pangrams):
         wrd_cnts.append(pan.wrd_cnt)
         char_cnts.append(pan.char_cnt)
         tok_cnts.append(pan.tok_cnt)
-        for let in pan.missing_let:
+        for let in pan.missing_lets:
             missing_char_cnt[char_to_int(let)]+=1
 
     return is_pans,wrd_cnts,char_cnts,tok_cnts,missing_char_cnt#,distances
 
+#generates n pangrams
+def generate_pangrams(n,model,prompt):
+    pangrams=[]
+    # generator_tracker=(n*.1)//1
+    for i in range(n):
+        pangrams.append(ps.PangramStats(ps.Pangram(llama.create_pangram(model,prompt)),model))
+        # if i%generator_tracker==0 and i!=0: #quick thing to help track progress for longer tests
+        print(f"{to_percent(i/n)} of pangrams generated")
+    return pangrams
 
+#prints the letter freqency and
+def letter_stats(missing_let):
+    max=min=missing_let[0]
+    max_ind=0
+    min_ind=[]
+    for i in range(len(missing_let)):
+        if missing_let[i]>max:
+            max=missing_let[i]
+            max_ind=i
+        if missing_let[i]<min:
+            min=missing_let[i]
+            min_ind=[i]
+        if missing_let[i]==min:
+            min_ind.append(i)
+        print(f"{string.ascii_lowercase[i]}:{missing_let[i]}")
+    min_missed_lets=[int_to_char(n) for n in min_ind]
+    print(f"The most missed letter was {int_to_char(max_ind)} which was missing {max} times.")
+    print(f"The least missed letters were:\n{min_missed_lets}\nwhich were only missing {min} times.")
 
-
-
-# analyze the below to help fine tune default prompt
-# missing letter frequencey Got function
-# maybe letter frequencey
-# variation in the responces, use algo function
-# number of words Got function
-# number of chars Got function
-#To make sence of avereage edit distnace, make random strings of the average length and then find the average distance between those,
-#
-# pangram         : A quick brown fox jumps over the lazy dog.
-# number of words : 9
-# number of chars : 33
-# missing letters : [] #['a','c']
-#
-#
+#displays the panagrams and thier stats
+def print_pans(pans,only_true=False):
+    print(f"\n\nHere are the {len(pans)} generated pangrams.\n")
+    for pan in pans:
+        if not only_true or (pan.is_pan):
+            print(f"{pan}\n------\n")
 
 
 def main():
@@ -126,45 +148,28 @@ def main():
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
-    num_pans=100
-    generator_tracker=(num_pans/20)//1
+    num_pans=5
+
+    full_prompt,readable_prompt=llama.create_prompt(st,phrases,target_wrd,target_char)
     model=llama.create_model(llama.MODEL_PATH)
+    print("model created, generating pangrams.")
 
-    full_prompt,_=llama.create_prompt(st,phrases,target_wrd,target_char)
-
-    pangrams=[]
-    #generate num_pan pangrams, then calculate their tokens, maybe doing this somewhere else
-    for i in range(num_pans):
-        pangrams.append(ps.PangramStats(llama.create_pangram(model,full_prompt),model))
-        if i%generator_tracker==0 and 1!=0: #quick thing to help track progress for longer tests
-            print(f"\n\n{i} pangrams generated\n\n")
-
+    pangrams=generate_pangrams(num_pans,model,full_prompt)
+    print("All pangrams generated.")
     #aggregating data from all pangrams
     is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
 
     #printing letter frequency stuff, including max and min
-    max=min=missing_let[0]
-    max_ind=min_ind=0
-    for i in range(len(missing_let)):
-        if missing_let[i]>max:
-            max=missing_let[i]
-            max_ind=0
-        if missing_let[i]<min:
-            min=missing_let[i]
-            min_ind=i
-        print(f"{string.ascii_lowercase[i]}:{missing_let[i]}")
-    print(f"The most missed letter was {int_to_char(max_ind)} with {max} times missing")
-    print(f"The least missed letter was {int_to_char(min_ind)} with only {min}")
-
+    letter_stats(missing_let) #maybe don't have it print, maybe do so that I can use a context manager to send the thing to the place
     #printing out the pangrams
-    print(f"\n\nHere are the {num_pans} generated pangrams.\n")
-    for pan in pangrams: #maybe only print the true ones
-        print(f"{pan}\n------\n")
+    # print(f"\n\nHere are the {num_pans} generated pangrams.\n")
+    # for pan in pangrams: #maybe only print the true ones
+    #     print(f"{pan}\n------\n")
 
     wrong=num_wrong(pangrams)
     correct=num_correct(pangrams)
-    print(f"number of false pangrams: {wrong} out of {num_pans}, {to_percent(wrong/num_pans)}%.")
-    print(f"number of false pangrams: {correct} out of {num_pans}, {to_percent(wrong/num_pans)}%.")
+    print(f"number of valid pangrams: {correct} out of {num_pans}, {to_percent(correct/num_pans)}.")
+    print(f"number of invalid pangrams: {wrong} out of {num_pans}, {to_percent(wrong/num_pans)}.")
     print(f"average num of tokens: {ave(tok_cnts)}\naverage num of words: {ave(wrd_cnts)}\naverage num of characters: {ave(char_cnts)}")
 
 #\naverage edit distance: {analyze.ave(distances)}, ok only missing distance stats now

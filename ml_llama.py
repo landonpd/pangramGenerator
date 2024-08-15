@@ -1,5 +1,7 @@
+import os
+import sys
 from llama_cpp import Llama
-
+from contextlib import contextmanager
 # Path to your GGUF model file goes here
 MODEL_PATH = "/Users/landondixon/.cache/lm-studio/models/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
@@ -54,8 +56,22 @@ KNOWN_PANGRMAS= [
     "Heavy boxes perform quick waltzes and jigs.",
 ]
 
+@contextmanager
+def suppress_output():
+    with open(os.devnull, 'w') as devnull:
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = devnull
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+
 def create_model(model_path):
-    return Llama(model_path=model_path)
+    with suppress_output():
+        return Llama(model_path=model_path)
 
 def create_prompt(sentence_starter="",phrases=[],num_wrd=0,num_char=0): #probably will add sytem prompt choice as well with default being whimsical fantasy
     st=p=nw=nc=""
@@ -89,7 +105,8 @@ def generate_text(prompt,model,rp=1,temp=.7,p=.1,k=35,max_tokens=0,suffix="",sto
 
 #just generate_text but with specific params, I'd just combine these two functions into one, consider
 def create_pangram(model,full_prompt):
-    return generate_text(full_prompt,model,stoppers=[".\""],temp=.9)
+    with suppress_output():
+        return generate_text(full_prompt,model,stoppers=[".\""],temp=.9)
 
 
 
