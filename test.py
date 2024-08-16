@@ -149,23 +149,41 @@ KNOWN_PANGRMAS= [
 ]
 # array="\n".join(KNOWN_PANGRMAS)
 # print(f"heres a string {array}")
-import os
-import sys
-from contextlib import contextmanager
-@contextmanager
-def stdout_to_file(file_path):
-    original_stdout = sys.stdout
-    try:
-        with open(file_path, 'a') as f:
-            sys.stdout = f
-            yield
-    finally:
-        sys.stdout = original_stdout
+#
+import time
+# Color constants
+RED = '\033[91m'
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+BLUE = '\033[94m'
+MAGENTA = '\033[95m'
+CYAN = '\033[96m'
+RESET = '\033[0m'  # Resets the color to default
+CLEAR_AND_RETURN='\033[2J\033[H'
 
-with stdout_to_file("test.txt"):
-   print("New Log: Testing letter frequencies",end=' ')
-   print(f"Here is some test data {21/3}\n--------------------\n")
-from datetime import datetime
-# Custom format
-timestamp = datetime.now().strftime("%H:%M:%S %m-%d-%Y ")
-print(f"Custom format: {timestamp}")
+# Example usage
+print(f"{RED}This is red text{RESET}")
+time.sleep(5)
+print(f"{CLEAR_AND_RETURN}Everything was just cleared and {GREEN}This {RESET}is green text")
+print(f"{BLUE}This is blue text{RESET}")
+
+# You can also combine colors with other text
+name = "Alice"
+print(f"Hello, {YELLOW}{name}{RESET}! How are you?")
+
+
+
+# Need to pipx install colorama,
+# guarenteed to work on all platforms,
+# Only want this if I am going to highlight stuff from the sentence, maybe like most common letter or whatever.
+# from colorama import Fore, Back, Style
+# import colorama
+
+# # Initialize colorama
+# colorama.init()
+
+# # Example usage
+# print(Fore.RED + "This is red text")
+# print(Back.GREEN + "This has a green background")
+# print(Fore.BLUE + Back.YELLOW + "Blue text on yellow background" + Style.RESET_ALL)
+# print("This is back to normal")

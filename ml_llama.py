@@ -2,6 +2,7 @@ import os
 import sys
 from llama_cpp import Llama
 from contextlib import contextmanager
+import pangram as ps #Is it still considered circular importing if I am imoprting only specific functions
 # Path to your GGUF model file goes here
 MODEL_PATH = "/Users/landondixon/.cache/lm-studio/models/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
@@ -21,7 +22,7 @@ PROMPT="""Hello, can you make a new, novel, unique pangram please, a pangram is 
 
 Here is a list parameters I want you to follow:
 - Do not use or derive from these well known pangrams:\n{pans}
-- Remember all 26 letters of the alphabet need to be in the sentence, not just the most and least common ones.
+- Remember all 26 letters of the alphabet need to be in the sentence, esspecially m.
 - Try to make a pangram that actually sounds like a real sentence instead of a list of disparate ideas.{sentence_starter}{phrases}{num_words}{num_char}
 - Only respond with the generated pangram, like:
 
@@ -32,7 +33,7 @@ For instance:
 "The quick brown fox jumps over the lazy dog."
 
 Think carefully and quietly before you respond. I will tip you $200 for every good pangram.
-"""
+""" #Add something about using the letter m, it always forgets this
 SENTENCE_STARTER_PROMPT="\n- Here is a sentence starter for your pangram: \"{st}\"."
 PHRASES_PROMPT="\n- Here are phrases that should be included in the pangram: \"{phrases}\". Try to include them in a natural way."
 NUMBER_OF_WORDS_PROMPT="\n- Try and make your pangram {num} words or shorter."
@@ -108,10 +109,21 @@ def create_pangram(model,full_prompt):
         return generate_text(full_prompt,model,stoppers=[".\""],temp=.9)
 
 
+#generates pangrams using the prompt until the result is a valid pangram
+def generate_true_pangram(model,prompt):
+    pan=ps.Pangram(create_pangram(model,prompt))
+    while not pan.is_pan:
+        pan=ps.Pangram(create_pangram(model,prompt))
+    return ps.PangramStats(pan,model)
 
-def count_tokens(text,model): #one token is about 4 letters
-    tokens=model.tokenize(text.encode())
-    return len(tokens)
+#generates variable amount of valid pangrams
+def generate_true_pangrams(model,prompt,num):
+    pans=[]
+    for i in range(num):
+        pans.append(generate_true_pangram(model,prompt))
+    return pans
+
+
 
 # Print the generated text
 # print("\nthe above is just the output from running llama, below is the response to the prompt\n")

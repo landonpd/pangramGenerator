@@ -1,7 +1,6 @@
 #double check this whole thing
 
 import string
-import ml_llama as llama
 
 class Pangram:
 #going to just have pangram and is_valid, need new is_pangram function to override the one in this class
@@ -29,7 +28,7 @@ class PangramStats():
         self._is_pan=pan.is_pan
         self._wrd_cnt = self.__num_words()
         self._char_cnt = self.__num_char()
-        self._tok_cnt = llama.count_tokens(self.pangram,model)
+        self._tok_cnt = self.__count_tokens(self.pangram,model)
         self._missing_lets = self.__missing_let()
         #maybe include tok_cnt, it is a stat of the pangram
 
@@ -53,6 +52,9 @@ class PangramStats():
                 missing_let.append(letter)
         return  missing_let
 
+    def __count_tokens(self,text,model): #one token is about 4 letters
+        tokens=model.tokenize(text.encode())
+        return len(tokens)
     #getters that make the member variables read only essentially
     @property
     def pangram(self):

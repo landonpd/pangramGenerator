@@ -21,6 +21,7 @@ import string
 import os
 import sys
 from contextlib import contextmanager
+from timeit import default_timer as timer
 import ml_llama as llama
 import pangram as ps
 from datetime import datetime
@@ -150,6 +151,17 @@ def print_pans(pans,only_true=False):
         if not only_true or (pan.is_pan):
             print(f"{pan}\n------\n")
 
+#look at better ways to get these in here without including them, should they just be in llama file?
+
+
+
+def time_func(func,*args,**kargs):
+    start = timer()
+    func(*args,**kargs)
+    end = timer()
+    return end - start
+    #print(f"It took {end - start:.6f} seconds to generate one true pangram with the prompt{}.")
+
 #use with stdout_to_file(): opens file path, and prints to it instead of to the console
 @contextmanager
 def stdout_to_file(file_path):
@@ -182,7 +194,7 @@ def main():
 
     #printing letter frequency stuff, including max and min
     with stdout_to_file(LOG_FILE):
-        print(f"Testing letter frequencies on {num_pans} pangrams with the following prompt:\n{readable_prompt}\nResults:")
+        print(f"Testing letter frequencies on {num_pans} pangrams with emphasis on not missing m. Here is the full prompt:\n{readable_prompt}\nResults:")
         letter_stats(missing_let) #maybe don't have it print, maybe do so that I can use a context manager to send the thing to the place
     #printing out the pangrams
     # print(f"\n\nHere are the {num_pans} generated pangrams.\n")

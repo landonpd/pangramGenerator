@@ -131,3 +131,70 @@ which was(were) missed 0 times.
 timestamp: 20:58:42 08-15-2024 
 ------------------------------------------------------------------------------------------------------------
 
+New Log: Testing letter frequencies on 1000 pangrams with the following prompt:
+Hello, can you make a new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
+
+Here is a list parameters I want you to follow:
+- Do not use or derive from these well known pangrams:
+A quick brown fox jumps over the lazy dog.
+  Blowzy night-frumps vex'd Jack Q.
+  Glum Schwartzkopf vex'd by NJ IQ.
+  Jived fox nymph grabs quick waltz.
+  Glib jocks quiz nymph to vex dwarf.
+  Waltz, bad nymph, for quick jigs vex.
+  Sphinx of black quartz, judge my vow.
+  Quick zephyrs blow, vexing daft Jim.
+  How vexingly quick daft zebras jump!
+  The five boxing wizards jump quickly.
+  Jackdaws love my big sphinx of quartz.
+  Pack my box with five dozen liquor jugs.
+  Big Fuji waves pitch enzymed kex liquor.
+  Fix problem quickly with galvanized jets.
+  Heavy boxes perform quick waltzes and jigs.
+- Remember all 26 letters of the alphabet need to be in the sentence, not just the most and least common ones.
+- Try to make a pangram that actually sounds like a real sentence instead of a list of disparate ideas.
+- Only respond with the generated pangram, like:
+
+"<pangram>"
+
+For instance:
+
+"The quick brown fox jumps over the lazy dog."
+
+Think carefully and quietly before you respond. I will tip you $200 for every good pangram.
+
+Results:
+a:2
+b:45
+c:74
+d:9
+e:0
+f:51
+g:249
+h:0
+i:0
+j:23
+k:4
+l:40
+m:281
+n:152
+o:6
+p:136
+q:10
+r:15
+s:0
+t:0
+u:8
+v:30
+w:192
+x:61
+y:36
+z:197
+The most missed letter(s) was(were) ['m']
+which was(were) missed 281 times.
+The least missed letter(s) was(were):
+['e', 'h', 'i', 's', 't']
+which was(were) missed 0 times.
+timestamp: 22:29:24 08-15-2024 
+------------------------------------------------------------------------------------------------------------
+
