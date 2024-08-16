@@ -22,6 +22,11 @@ class Pangram:
     def is_pan(self):
         return self._is_pan
 
+    def __str__(self):
+        validity="valid" if self.is_pan else "invald"
+        return (f"Pangram: \"{self._pangram}\"\n"
+                f"Validity: {validity}\n")
+
 class PangramStats():
     def __init__(self, pan,model): #would need to take in a model to actually store tokens, maybe I make this one settable?
         self._pangram=pan.pangram

@@ -17,23 +17,37 @@ Today Date: 26 Jul 2024
 
 """ #using triple quote so that I can use endlines in prompt if I need to
 #Use lots of adectives to help include all of the letters of the alphabet
-SYSTEM_PROMPT="You are a famous, successful English author. You write mostly sci-fi and fantasy fiction and all of your books can be described as whimsical and humorous." #other ideas for personalities, new york times editor (serious and relevant options)
-PROMPT="""Hello, can you make a new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
+
+# system_prompts=[fantasy author,nyt editor,old timey news broadcaster]
+SYSTEM_PROMPTS=["You are a famous, successful English author. You write mostly sci-fi and fantasy fiction and all of your books can be described as whimsical and humorous.",
+    "You are a head editor for the New York Times, a very successful and influential paper. You write about serious issues in the world with a gravitas befitting them, but you also really enjoy all kinds of word puzzles.",
+    "You are a news broadcaster from the early 20th century with the classic mid-atlantic accent. You talk fast with vernacular from the time period."]#famous musician maybe
+
+PROMPT="""Hello, can you make {num_pans} new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
 
 Here is a list parameters I want you to follow:
 - Do not use or derive from these well known pangrams:\n{pans}
-- Remember all 26 letters of the alphabet need to be in the sentence, esspecially m.
+- Remember all 26 letters of the alphabet need to be in the sentence, DO NOT FORGET ANY LETTER.
 - Try to make a pangram that actually sounds like a real sentence instead of a list of disparate ideas.{sentence_starter}{phrases}{num_words}{num_char}
-- Only respond with the generated pangram, like:
+- Only respond with the generated pangrams, like:
 
 "<pangram>"
+"<pangram>"
+"<pangram>"
+.
+.
+.
 
 For instance:
-
 "The quick brown fox jumps over the lazy dog."
+"Sphinx of black quartz, judge my vow."
+"Pack my box with five dozen liquor jugs."
+.
+.
+.
 
 Think carefully and quietly before you respond. I will tip you $200 for every good pangram.
-""" #Add something about using the letter m, it always forgets this
+""" #Add something about using the letter m, it always forgets this, with my message it forgot p even more than it forgot p
 SENTENCE_STARTER_PROMPT="\n- Here is a sentence starter for your pangram: \"{st}\"."
 PHRASES_PROMPT="\n- Here are phrases that should be included in the pangram: \"{phrases}\". Try to include them in a natural way."
 NUMBER_OF_WORDS_PROMPT="\n- Try and make your pangram {num} words or shorter."
@@ -56,6 +70,8 @@ KNOWN_PANGRMAS= [
     "Heavy boxes perform quick waltzes and jigs.",
 ]
 
+AVE_ATTEMPTS=5
+
 @contextmanager
 def suppress_output():
     with open(os.devnull, 'w') as devnull:
@@ -73,7 +89,7 @@ def create_model(model_path):
     with suppress_output():
         return Llama(model_path=model_path)
 
-def create_prompt(sentence_starter="",phrases=[],num_wrd=0,num_char=0): #probably will add sytem prompt choice as well with default being whimsical fantasy
+def create_prompt(context=0,sentence_starter="",phrases=[],num_wrd=0,num_char=0,num_pans=1): #probably will add sytem prompt choice as well with default being whimsical fantasy
     st=p=nw=nc=""
     prompt=PROMPT
     if len(sentence_starter)>0:
@@ -84,9 +100,9 @@ def create_prompt(sentence_starter="",phrases=[],num_wrd=0,num_char=0): #probabl
         nw=NUMBER_OF_WORDS_PROMPT.format(num=num_wrd)
     if num_char>0:
         nc=NUMBER_OF_CHAR_PROMPT.format(num=num_char )
-    prompt=prompt.format(sentence_starter=st,phrases=p,num_words=nw,num_char=nc,pans="\n  ".join(KNOWN_PANGRMAS))
+    prompt=prompt.format(num_pans=(num_pans*AVE_ATTEMPTS),sentence_starter=st,phrases=p,num_words=nw,num_char=nc,pans="\n  ".join(KNOWN_PANGRMAS))
     # print(f"prompt used: {prompt}")
-    return DEFUALT_PROMPT.format(prompt=prompt,system_prompt=SYSTEM_PROMPT),prompt
+    return DEFUALT_PROMPT.format(prompt=prompt,system_prompt=SYSTEM_PROMPTS[context]),prompt
 
 
 # Generate text calls create_completion which takes the prompt and continues it as if it was a sentence starter
@@ -101,23 +117,23 @@ def generate_text(prompt,model,rp=1,temp=.7,p=.1,k=35,max_tokens=0,suffix="",sto
         output=model.create_completion(prompt, repeat_penalty=rp,temperature=0,min_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stoppers,seed=seed) #create_completion equals model() but because theres no typing I don't think I can do that
     else:
         output=model.create_completion(prompt, repeat_penalty=rp,temperature=temp,typical_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stoppers)
-    return output["choices"][0]["text"].strip("\"") #might add strip() which removes whitespace at teh beginning and end, or something else if I specify it
+    return output["choices"][0]["text"] #might add strip() which removes whitespace at teh beginning and end, or something else if I specify it
 
 #just generate_text but with specific params, I'd just combine these two functions into one, consider
-def create_pangram(model,full_prompt):
+def create_pangram(full_prompt,model):
     with suppress_output():
-        return generate_text(full_prompt,model,stoppers=[".\""],temp=.9)
+        return generate_text(full_prompt,model,temp=.9) #stoppers=[".\""] .strip("\"")
 
 
 #generates pangrams using the prompt until the result is a valid pangram
-def generate_true_pangram(model,prompt):
+def generate_true_pangram(prompt,model):
     pan=ps.Pangram(create_pangram(model,prompt))
     while not pan.is_pan:
         pan=ps.Pangram(create_pangram(model,prompt))
     return ps.PangramStats(pan,model)
 
 #generates variable amount of valid pangrams
-def generate_true_pangrams(model,prompt,num):
+def generate_true_pangrams(prompt,model,num):
     pans=[]
     for i in range(num):
         pans.append(generate_true_pangram(model,prompt))

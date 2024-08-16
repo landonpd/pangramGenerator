@@ -182,31 +182,41 @@ def main():
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
+    context=0
     num_pans=1000
-
-    full_prompt,readable_prompt=llama.create_prompt(st,phrases,target_wrd,target_char)
+    pans=[]
+    full_prompt,readable_prompt=llama.create_prompt(context,st,phrases,target_wrd,target_char)
     model=llama.create_model(llama.MODEL_PATH)
     print("model created, generating pangrams.")
-
-    pangrams=generate_pangrams(num_pans,model,full_prompt)
-    print("All pangrams generated.")
-    #aggregating data from all pangrams
-    is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
+    for i in range(10):
+        responses=llama.create_pangram(full_prompt,model).split("\n\n")
+        # print(f"{responses}")
+        for response in responses:
+            temp_pan=ps.Pangram(response)
+            pans.append(temp_pan)
+        print(i)
+    print(pans)
+    # pangrams=generate_pangrams(num_pans,model,full_prompt)
+    # print("All pangrams generated.")
+    # #aggregating data from all pangrams
+    # is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
 
     #printing letter frequency stuff, including max and min
-    with stdout_to_file(LOG_FILE):
-        print(f"Testing letter frequencies on {num_pans} pangrams with emphasis on not missing m. Here is the full prompt:\n{readable_prompt}\nResults:")
-        letter_stats(missing_let) #maybe don't have it print, maybe do so that I can use a context manager to send the thing to the place
-    #printing out the pangrams
+    # with stdout_to_file(LOG_FILE):
+    #     print(f"Testing letter frequencies on {num_pans} pangrams with emphasis on not missing m. Here is the full prompt:\n{readable_prompt}\nResults:")
+    #     letter_stats(missing_let) #maybe don't have it print, maybe do so that I can use a context manager to send the thing to the place
+
+
+    # printing out the pangrams
     # print(f"\n\nHere are the {num_pans} generated pangrams.\n")
     # for pan in pangrams: #maybe only print the true ones
     #     print(f"{pan}\n------\n")
 
-    wrong=num_wrong(pangrams)
-    correct=num_correct(pangrams)
-    print(f"number of valid pangrams: {correct} out of {num_pans}, {to_percent(correct/num_pans)}.")
-    print(f"number of invalid pangrams: {wrong} out of {num_pans}, {to_percent(wrong/num_pans)}.")
-    print(f"average num of tokens: {ave(tok_cnts)}\naverage num of words: {ave(wrd_cnts)}\naverage num of characters: {ave(char_cnts)}")
+    # wrong=num_wrong(pangrams)
+    # correct=num_correct(pangrams)
+    # print(f"number of valid pangrams: {correct} out of {num_pans}, {to_percent(correct/num_pans)}.")
+    # print(f"number of invalid pangrams: {wrong} out of {num_pans}, {to_percent(wrong/num_pans)}.")
+    # print(f"average num of tokens: {ave(tok_cnts)}\naverage num of words: {ave(wrd_cnts)}\naverage num of characters: {ave(char_cnts)}")
 
 #\naverage edit distance: {analyze.ave(distances)}, ok only missing distance stats now
 if __name__=="__main__":
