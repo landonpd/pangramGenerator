@@ -48,6 +48,7 @@ NUMBER_OF_WORDS_PROMPT="\n- Try and make your pangram {num} words or shorter."
 NUMBER_OF_CHAR_PROMPT="\n- Try and make your pangram {num} characters or shorter, not including punctuation."
 KNOWN_PANGRMAS= [
     "A quick brown fox jumps over the lazy dog.",
+    "Pack my box with five dozen liquor jugs.",
     "Blowzy night-frumps vex'd Jack Q.",
     "Glum Schwartzkopf vex'd by NJ IQ.",
     "Jived fox nymph grabs quick waltz.",
@@ -58,7 +59,6 @@ KNOWN_PANGRMAS= [
     "How vexingly quick daft zebras jump!",
     "The five boxing wizards jump quickly.",
     "Jackdaws love my big sphinx of quartz.",
-    "Pack my box with five dozen liquor jugs.",
     "Big Fuji waves pitch enzymed kex liquor.",
     "Fix problem quickly with galvanized jets.",
     "Heavy boxes perform quick waltzes and jigs.",
