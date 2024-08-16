@@ -23,7 +23,7 @@ class Pangram:
         return self._is_pan
 
     def __str__(self):
-        validity="valid" if self.is_pan else "invald"
+        validity="valid" if self.is_pan else "invalid"
         return (f"Pangram: \"{self._pangram}\"\n"
                 f"Validity: {validity}\n")
 

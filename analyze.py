@@ -185,21 +185,27 @@ def main():
     context=0
     num_pans=1000
     pans=[]
+    num_pans=[]
     full_prompt,readable_prompt=llama.create_prompt(context,st,phrases,target_wrd,target_char)
     model=llama.create_model(llama.MODEL_PATH)
+    print(readable_prompt)
     print("model created, generating pangrams.")
-    for i in range(10):
-        responses=llama.create_pangram(full_prompt,model).split("\n\n")
-        # print(f"{responses}")
-        for response in responses:
-            temp_pan=ps.Pangram(response)
-            pans.append(temp_pan)
-        print(i)
-    print(pans)
-    # pangrams=generate_pangrams(num_pans,model,full_prompt)
-    # print("All pangrams generated.")
-    # #aggregating data from all pangrams
-    # is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
+    # for i in range(10):
+    #     responses=llama.create_pangram(full_prompt,model).split("\n\n")
+    #     # print(f"{responses}")
+    #     num_pans.append(len(responses))
+    #     for response in responses:
+    #         temp_pan=ps.Pangram(response)
+    #         print(temp_pan)
+    #         pans.append(temp_pan)
+    #     print(f"On iteration {i} there were {len(responses)} generated ")
+    # print(f"average num of responsees: {ave(num_pans)}")
+    # print(f"percent of valid pangrams: {to_percent(num_correct(pans)/len(pans))}, {num_correct(pans)} out of {len(pans)}")
+    #
+    pangrams=generate_pangrams(num_pans,model,full_prompt)
+    print("All pangrams generated.")
+    #aggregating data from all pangrams
+    is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
 
     #printing letter frequency stuff, including max and min
     # with stdout_to_file(LOG_FILE):

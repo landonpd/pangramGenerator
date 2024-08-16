@@ -3,7 +3,7 @@
 #Going to start with a function that can double check that the inputted sentence is a panagram
 
 # ok, to finish this up,
-# TODO: modify prompt and post proccessing to generate more than one at a time, will really help make this faster
+# TODO: modify prompt and post proccessing to generate more than one at a time, will really help make this faster, issue, generating multiple things, they are way less accurate
 # Consider adding pretty ui, if it is easier than bubble tea than definitly, if not then leave it gross for now
 # Consider making it so that when generating a function the results have to match params, so it has to start with the sentence starter, it has to have all the phrases, it has to be under the char and word limit. Could break because could cause infinite loop, would have to put a limiter on it.
 #

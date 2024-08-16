@@ -23,28 +23,19 @@ SYSTEM_PROMPTS=["You are a famous, successful English author. You write mostly s
     "You are a head editor for the New York Times, a very successful and influential paper. You write about serious issues in the world with a gravitas befitting them, but you also really enjoy all kinds of word puzzles.",
     "You are a news broadcaster from the early 20th century with the classic mid-atlantic accent. You talk fast with vernacular from the time period."]#famous musician maybe
 
-PROMPT="""Hello, can you make {num_pans} new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
+PROMPT="""Hello, can you make a new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
 
 Here is a list parameters I want you to follow:
 - Do not use or derive from these well known pangrams:\n{pans}
 - Remember all 26 letters of the alphabet need to be in the sentence, DO NOT FORGET ANY LETTER.
 - Try to make a pangram that actually sounds like a real sentence instead of a list of disparate ideas.{sentence_starter}{phrases}{num_words}{num_char}
-- Only respond with the generated pangrams, like:
+- Only respond with the generated pangram, like:
 
 "<pangram>"
-"<pangram>"
-"<pangram>"
-.
-.
-.
 
 For instance:
+
 "The quick brown fox jumps over the lazy dog."
-"Sphinx of black quartz, judge my vow."
-"Pack my box with five dozen liquor jugs."
-.
-.
-.
 
 Think carefully and quietly before you respond. I will tip you $200 for every good pangram.
 """ #Add something about using the letter m, it always forgets this, with my message it forgot p even more than it forgot p
@@ -70,7 +61,7 @@ KNOWN_PANGRMAS= [
     "Heavy boxes perform quick waltzes and jigs.",
 ]
 
-AVE_ATTEMPTS=5
+# AVE_ATTEMPTS=5
 
 @contextmanager
 def suppress_output():
@@ -100,7 +91,7 @@ def create_prompt(context=0,sentence_starter="",phrases=[],num_wrd=0,num_char=0,
         nw=NUMBER_OF_WORDS_PROMPT.format(num=num_wrd)
     if num_char>0:
         nc=NUMBER_OF_CHAR_PROMPT.format(num=num_char )
-    prompt=prompt.format(num_pans=(num_pans*AVE_ATTEMPTS),sentence_starter=st,phrases=p,num_words=nw,num_char=nc,pans="\n  ".join(KNOWN_PANGRMAS))
+    prompt=prompt.format(sentence_starter=st,phrases=p,num_words=nw,num_char=nc,pans="\n  ".join(KNOWN_PANGRMAS))
     # print(f"prompt used: {prompt}")
     return DEFUALT_PROMPT.format(prompt=prompt,system_prompt=SYSTEM_PROMPTS[context]),prompt
 
@@ -122,21 +113,21 @@ def generate_text(prompt,model,rp=1,temp=.7,p=.1,k=35,max_tokens=0,suffix="",sto
 #just generate_text but with specific params, I'd just combine these two functions into one, consider
 def create_pangram(full_prompt,model):
     with suppress_output():
-        return generate_text(full_prompt,model,temp=.9) #stoppers=[".\""] .strip("\"")
+        return generate_text(full_prompt,model,stoppers=[".\""],temp=.9).strip("\"") #stoppers=[".\""] .strip("\"")
 
 
 #generates pangrams using the prompt until the result is a valid pangram
 def generate_true_pangram(prompt,model):
-    pan=ps.Pangram(create_pangram(model,prompt))
+    pan=ps.Pangram(create_pangram(prompt,model))
     while not pan.is_pan:
-        pan=ps.Pangram(create_pangram(model,prompt))
+        pan=ps.Pangram(create_pangram(prompt,model))
     return ps.PangramStats(pan,model)
 
 #generates variable amount of valid pangrams
 def generate_true_pangrams(prompt,model,num):
     pans=[]
     for i in range(num):
-        pans.append(generate_true_pangram(model,prompt))
+        pans.append(generate_true_pangram(prompt,model))
     return pans
 
 
