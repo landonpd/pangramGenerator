@@ -2,29 +2,36 @@
 #make it so that a user can enter either words or phrases that they want to be in the panagram
 #Going to start with a function that can double check that the inputted sentence is a panagram
 
-#ok, to finish this up, add user input, user chooses context for their sentence, so they could pick whimsical fantasy author, new york times editor etc.
-#user enters phrases and stater sentence
-#user enters a target number of words
-#ok user enters target
+# ok, to finish this up,
+# add user input, user chooses context for their sentence, so they could pick whimsical fantasy author, new york times editor etc., ask ai to give me more ideas probably
+# Consider adding pretty ui, if it is easier than bubble tea than definitly, if not then leave it gross for now
+# Consider making it so that when generating a function the results have to match params, so it has to start with the sentence starter, it has to have all the phrases, it has to be under the char and word limit. Could break because could cause infinite loop, would have to put a limiter on it.
+#
+#
+# In analyze.py
+# look at each individual optional parameter and make sure it works, (e.g num characters makes it longer right now)
+# add a function that generates random strings, when testing edit distance make two strings of the average length and find thier edit distance from each other (or maybe do this like 50 times) to compare to the edit distance for the sentences, actual sentences have spaces and punctuation, so they are actually longer, don't know what to do with that
+# Add function to time a function so I can see how it works
+
 import string
 import ml_llama as llama
-import analyze
 import pangram as ps
 #so 4 letters per token, average number of letters per word is 6.47 so lets say 7, if I want 20 words, thats 7*20/4 for number of tokens approximateyly, could use this to narrow down the max_token
 
 #generates pangrams using the prompt until the result is a valid pangram
 def generate_pangram(model,prompt):
     pan=ps.Pangram(llama.create_pangram(model,prompt))
-    while not pan.is_valid:
+    while not pan.is_pan:
         pan=ps.Pangram(llama.create_pangram(model,prompt))
     return ps.PangramStats(pan,model)
 
 #generates variable amount of valid pangrams
-def generate_pangrams(model,prompt,num):
+def generate_true_pangram(model,prompt,num):
     pans=[]
     for i in range(num):
         pans.append(generate_pangram(model,prompt))
     return pans
+
 def main():
     st=""#"The universe is a lie"
     phrases=[]#["I like potatoes","hello World"]
@@ -48,7 +55,7 @@ def main():
     #create the model, generate the prompt,
     model=llama.create_model(llama.MODEL_PATH)
     full_prompt,_=llama.create_prompt(st,phrases,target_wrd,target_char)
-    pangrams=generate_pangrams(model,full_prompt,num_pans)
+    pangrams=generate_true_pangram(model,full_prompt,num_pans)
     for pan in pangrams:
         print(f"{pan}\n------\n") #pangram.stats_print(target_wrd,target_char)
     # if target_wrd!=-1:
@@ -62,25 +69,5 @@ def main():
     #     else:
     #         print(f"The pangram has an invalid number of characters,it has more than {target_char} characters.")
 
-
-    #below is code to run and collect data from lots of pangrams, useful for finding patterns in the data
-    # pangrams=[]
-    # num_toks=[]
-    # for i in range(num_pans):
-    #     temp_pan=llama.create_pangram(model,full_prompt)
-    #     pangrams.append(temp_pan)
-    #     num_toks.append(llama.count_tokens(temp_pan,model))
-    #     if i%10==0:
-    #         print(f"\n\n{i} pangrams generated\n\n")
-    # missing_let,wrong_count=analyze.test_missing_let_freq(pangrams)
-    # for i in range(len(missing_let)):
-    #     print(f"{string.ascii_lowercase[i]}:{missing_let[i]}")
-
-    # is_pans,len_wrds,len_chars,distances=analyze.stats_aggregation(pangrams)
-    # print(f"\n\nHere are the {num_pans} generated pangrams.\n")
-    # for i in range(len(pangrams)):
-    #     print(f"{pangrams[i]}\n\nThis is a {is_pans[i]} pangram with {len_wrds[i]} words, {len_chars[i]} characters, and an average distance to other generated pangrams of {distances[i]}.\n------\n")
-    # print(f"number of false pangrams: {wrong_count} out of {num_pans}. {round(((num_pans-wrong_count)/num_pans)*100)}% correct")
-    # print(f"average num of tokens: {analyze.ave(num_toks)}\naverage num of words: {analyze.ave(len_wrds)}\naverage num of characters: {analyze.ave(len_chars)}\naverage edit distance: {analyze.ave(distances)}")
 if __name__=="__main__":
     main()

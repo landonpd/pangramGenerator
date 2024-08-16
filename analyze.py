@@ -18,9 +18,15 @@ missing letters : [] #['a','c']
 '''
 
 import string
+import os
+import sys
+from contextlib import contextmanager
 import ml_llama as llama
 import pangram as ps
+from datetime import datetime
 
+
+LOG_FILE="logs/analysisTest.log"
 #maybe put these type of functions somewhere else entirely
 def char_to_int(char):
     return ord(char)-97
@@ -141,6 +147,18 @@ def print_pans(pans,only_true=False):
         if not only_true or (pan.is_pan):
             print(f"{pan}\n------\n")
 
+#use with stdout_to_file(): opens file path, and prints to it instead of to the console
+@contextmanager
+def stdout_to_file(file_path):
+    original_stdout = sys.stdout
+    try:
+        with open(file_path, 'a') as f:
+            sys.stdout = f
+            print("New Log:",end=" ")
+            yield
+            print(f"timestamp: {datetime.now().strftime("%H:%M:%S %m-%d-%Y ")}\n------------------------------------------------------------------------------------------------------------\n")
+    finally:
+        sys.stdout = original_stdout
 
 def main():
     #default values for user inputted parameters, can also be used for testing here
@@ -148,7 +166,7 @@ def main():
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
-    num_pans=5
+    num_pans=10
 
     full_prompt,readable_prompt=llama.create_prompt(st,phrases,target_wrd,target_char)
     model=llama.create_model(llama.MODEL_PATH)
@@ -160,7 +178,9 @@ def main():
     is_pans,wrd_cnts,char_cnts,tok_cnts,missing_let=stats_aggregation(pangrams)
 
     #printing letter frequency stuff, including max and min
-    letter_stats(missing_let) #maybe don't have it print, maybe do so that I can use a context manager to send the thing to the place
+    with stdout_to_file(LOG_FILE):
+        print(f"Testing letter frequencies on {num_pans} pangrams with the following prompt:\n{readable_prompt}\nResults:")
+        letter_stats(missing_let) #maybe don't have it print, maybe do so that I can use a context manager to send the thing to the place
     #printing out the pangrams
     # print(f"\n\nHere are the {num_pans} generated pangrams.\n")
     # for pan in pangrams: #maybe only print the true ones

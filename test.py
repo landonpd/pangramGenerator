@@ -149,12 +149,23 @@ KNOWN_PANGRMAS= [
 ]
 # array="\n".join(KNOWN_PANGRMAS)
 # print(f"heres a string {array}")
+import os
+import sys
+from contextlib import contextmanager
+@contextmanager
+def stdout_to_file(file_path):
+    original_stdout = sys.stdout
+    try:
+        with open(file_path, 'a') as f:
+            sys.stdout = f
+            yield
+    finally:
+        sys.stdout = original_stdout
 
-if 3:
-    print("3 is true")
-else:
-    print("3 is false")
-if 0:
-    print("0 is true")
-else:
-    print("0 is false")
+with stdout_to_file("test.txt"):
+   print("New Log: Testing letter frequencies",end=' ')
+   print(f"Here is some test data {21/3}\n--------------------\n")
+from datetime import datetime
+# Custom format
+timestamp = datetime.now().strftime("%H:%M:%S %m-%d-%Y ")
+print(f"Custom format: {timestamp}")

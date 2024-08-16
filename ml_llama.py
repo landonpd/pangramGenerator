@@ -17,8 +17,7 @@ Today Date: 26 Jul 2024
 """ #using triple quote so that I can use endlines in prompt if I need to
 #Use lots of adectives to help include all of the letters of the alphabet
 SYSTEM_PROMPT="You are a famous, successful English author. You write mostly sci-fi and fantasy fiction and all of your books can be described as whimsical and humorous." #other ideas for personalities, new york times editor (serious and relevant options)
-PROMPT="""
-Hello, can you make a new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
+PROMPT="""Hello, can you make a new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
 
 Here is a list parameters I want you to follow:
 - Do not use or derive from these well known pangrams:\n{pans}
