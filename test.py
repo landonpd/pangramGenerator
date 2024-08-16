@@ -159,7 +159,7 @@ BLUE = '\033[94m'
 MAGENTA = '\033[95m'
 CYAN = '\033[96m'
 RESET = '\033[0m'  # Resets the color to default
-CLEAR_AND_RETURN='\033[2J\033[H'
+CLEAR_AND_RETURN='\033c\033[H' #clears and returns cursor to default position, ask claude if this is a real clear, it is
 
 # Example usage
 print(f"{RED}This is red text{RESET}")

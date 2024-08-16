@@ -28,6 +28,7 @@ from datetime import datetime
 
 
 LOG_FILE="logs/analysisTest.log"
+CLEAR_AND_RETURN='\033c\033[H'
 #maybe put these type of functions somewhere else entirely
 def char_to_int(char):
     return ord(char)-97
@@ -119,7 +120,7 @@ def generate_pangrams(n,model,prompt):
     for i in range(n):
         pangrams.append(ps.PangramStats(ps.Pangram(llama.create_pangram(model,prompt)),model))
         # if i%generator_tracker==0 and i!=0: #quick thing to help track progress for longer tests
-        print(f"{to_percent(i/n)} of pangrams generated")
+        print(f"{CLEAR_AND_RETURN}{to_percent(i/n)} of pangrams generated")
     return pangrams
 
 #prints the letter freqency and
