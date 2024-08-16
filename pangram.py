@@ -24,7 +24,7 @@ class Pangram:
 
     def __str__(self):
         validity="valid" if self.is_pan else "invalid"
-        return (f"Pangram: \"{self._pangram}\"\n"
+        return (f"Pangram: \"{self._pangram}.\"\n"
                 f"Validity: {validity}\n")
 
 class PangramStats():
@@ -95,7 +95,7 @@ class PangramStats():
 
 
     def __str__(self):
-            return (f"Pangram: \"{self._pangram}\"\n"
+            return (f"Pangram: \"{self._pangram}.\"\n"
                     f"Word count: {self._wrd_cnt}\n"
                     f"Character count: {self._char_cnt}")
 

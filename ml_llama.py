@@ -18,11 +18,14 @@ Today Date: 26 Jul 2024
 """ #using triple quote so that I can use endlines in prompt if I need to
 #Use lots of adectives to help include all of the letters of the alphabet
 
-# system_prompts=[fantasy author,nyt editor,old timey news broadcaster]
+# system_prompts=[fantasy author,nyt editor,old timey news broadcaster, gossip columist,genius scientist who uses confusing jargon,zooligist who really likes all kinds of animals, ]
 SYSTEM_PROMPTS=["You are a famous, successful English author. You write mostly sci-fi and fantasy fiction and all of your books can be described as whimsical and humorous.",
     "You are a head editor for the New York Times, a very successful and influential paper. You write about serious issues in the world with a gravitas befitting them, but you also really enjoy all kinds of word puzzles.",
-    "You are a news broadcaster from the early 20th century with the classic mid-atlantic accent. You talk fast with vernacular from the time period."]#famous musician maybe
-
+    "You are a news broadcaster from the early 20th century with the classic mid-atlantic accent. You talk fast with vernacular from the time period.",
+    "You are an editor for a very famous gossip blog. You know all the newest celebrity gossip. Your blog is very informal, like you are gossiping to your friend and you are always talking about celebrity news.",
+    "You are a world famous scientist. You are so smart and know really big, 'fancy' words. You also use complex jargon all the time even though most people can't understand you.",
+    "You are a famous zooligist, ind of like Steve Irwin. You travel the world and learn about and teach about interesting animals. You also write for National Geographic."] #famous musician maybe
+#TODO:  gossip context doesn't really work, modify it or remove it
 PROMPT="""Hello, can you make a new, novel, unique pangram please, a pangram is a sentence with at least one instance of all 26 letters.
 
 Here is a list parameters I want you to follow:
@@ -92,7 +95,7 @@ def create_prompt(context=0,sentence_starter="",phrases=[],num_wrd=0,num_char=0,
     if num_char>0:
         nc=NUMBER_OF_CHAR_PROMPT.format(num=num_char )
     prompt=prompt.format(sentence_starter=st,phrases=p,num_words=nw,num_char=nc,pans="\n  ".join(KNOWN_PANGRMAS))
-    # print(f"prompt used: {prompt}")
+    # print(f"context used: {SYSTEM_PROMPTS[context]}")
     return DEFUALT_PROMPT.format(prompt=prompt,system_prompt=SYSTEM_PROMPTS[context]),prompt
 
 
@@ -105,15 +108,15 @@ def generate_text(prompt,model,rp=1,temp=.7,p=.1,k=35,max_tokens=0,suffix="",sto
     temp: controls the randomness in generatino, lower more deterministic, higher more random, 0 to 1, commonly .5 to 1
     '''
     if seed!=-1: #this means we want deterministic outputs for testing purposes, might remove this capability later, or make a seperate function?
-        output=model.create_completion(prompt, repeat_penalty=rp,temperature=0,min_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stoppers,seed=seed) #create_completion equals model() but because theres no typing I don't think I can do that
+        output=model.create_completion(prompt, repeat_penalty=rp,temperature=0,min_p=p,top_k=k,max_tokens=max_tokens,suffix=suffix,stop=stoppers,seed=seed) #create_completion equals model() but because theres no typing I don't think I can do that
     else:
-        output=model.create_completion(prompt, repeat_penalty=rp,temperature=temp,typical_p=p,top_k=k,max_tokens=100,suffix=suffix,stop=stoppers)
+        output=model.create_completion(prompt, repeat_penalty=rp,temperature=temp,typical_p=p,top_k=k,max_tokens=max_tokens,suffix=suffix,stop=stoppers)
     return output["choices"][0]["text"] #might add strip() which removes whitespace at teh beginning and end, or something else if I specify it
 
 #just generate_text but with specific params, I'd just combine these two functions into one, consider
 def create_pangram(full_prompt,model):
     with suppress_output():
-        return generate_text(full_prompt,model,stoppers=[".\""],temp=.9).strip("\"") #stoppers=[".\""] .strip("\"")
+        return generate_text(full_prompt,model,stoppers=[".\""],temp=.95).strip("\"") #stoppers=[".\""] .strip("\"")
 
 
 #generates pangrams using the prompt until the result is a valid pangram
