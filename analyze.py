@@ -124,21 +124,24 @@ def generate_pangrams(n,model,prompt):
 #prints the letter freqency and
 def letter_stats(missing_let):
     max=min=missing_let[0]
-    max_ind=0
+    max_ind=[]
     min_ind=[]
     for i in range(len(missing_let)):
         if missing_let[i]>max:
             max=missing_let[i]
-            max_ind=i
+            max_ind=[i]
+        elif missing_let[i]==max:
+            max_ind.append(i)
         if missing_let[i]<min:
             min=missing_let[i]
             min_ind=[i]
-        if missing_let[i]==min:
+        elif missing_let[i]==min:
             min_ind.append(i)
         print(f"{string.ascii_lowercase[i]}:{missing_let[i]}")
     min_missed_lets=[int_to_char(n) for n in min_ind]
-    print(f"The most missed letter was {int_to_char(max_ind)} which was missing {max} times.")
-    print(f"The least missed letters were:\n{min_missed_lets}\nwhich were only missing {min} times.")
+    max_missed_lets=[int_to_char(n) for n in max_ind]
+    print(f"The most missed letter(s) was(were) {max_missed_lets}\nwhich was(were) missed {max} times.")
+    print(f"The least missed letter(s) was(were):\n{min_missed_lets}\nwhich was(were) missed {min} times.")
 
 #displays the panagrams and thier stats
 def print_pans(pans,only_true=False):
@@ -166,7 +169,7 @@ def main():
     phrases=[]#["I like potatoes","hello World"]
     target_wrd=-1
     target_char=-1
-    num_pans=10
+    num_pans=1000
 
     full_prompt,readable_prompt=llama.create_prompt(st,phrases,target_wrd,target_char)
     model=llama.create_model(llama.MODEL_PATH)
